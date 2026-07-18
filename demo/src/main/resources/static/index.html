@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Java</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Style-->
+    <style>
+        :root {
+            --primary-color: #3a86ff;
+            --primary-dark: #2667cc;
+            --secondary-color: #8338ec;
+            --bg-light: #f8f9fa;
+            --bg-dark: #121212;
+            --text-light: #333;
+            --text-dark: #eee;
+            --chat-bg-light: #ffffff;
+            --chat-bg-dark: #1e1e1e;
+            --message-bot: #f1f1f1;
+            --message-user: #3a86ff;
+            --warning-color: #d90429;
+            --success-color: #4CAF50;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --sidebar-width: 250px;
+            --star-color: #ffc107;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-light);
+            color: var(--text-light);
+            min-height: 100vh;
+            transition: var(--transition);
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.dark-mode {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+            gap: 15px;
+            padding: 15px;
+            margin-left: 0;
+            transition: var(--transition);
+            max-width: 75%;
+            width: 100%;
+        }
+
+        body.sidebar-open .container {
+            margin-left: var(--sidebar-width);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 75%;
+        }
+
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-color);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+
+        #chatbox {
+            flex: 1;
+            min-height: 60vh;
+            border: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background: var(--chat-bg-light);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: var(--transition);
+        }
+
+        body.dark-mode #chatbox {
+            background: var(--chat-bg-dark);
+            border-color: #333;
+        }
+
+        .message {
+            display: flex;
+            max-width: 85%;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .name-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .time-label {
+            font-size: 0.65rem;
+            opacity: 0.7;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-avatar {
+            border: 2px solid var(--primary-color);
+        }
+
+        .message-content {
+            padding: 14px 16px;
+            border-radius: var(--border-radius);
+            word-wrap: break-word;
+            line-height: 1.5;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            font-size: 0.95rem;
+            max-width: 100%;
+        }
+
+        .bot-message .message-content {
+            background: var(--message-bot);
+            color: var(--text-light);
+            border-top-left-radius: 4px;
+        }
+
+        .user-message .message-content {
+            background: var(--message-user);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+
+        body.dark-mode .bot-message .message-content {
+            background: #2d2d2d;
+            color: var(--text-dark);
+        }
+
+        #input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #input-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            outline: none;
+            transition: var(--transition);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #message-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.2);
+        }
+
+        body.dark-mode #message-input {
+            background: #2d2d2d;
+            color: var(--text-dark);
+            border-color: #444;
+        }
+
+        #send-button {
+            padding: 0 15px;
+            font-size: 0.9rem;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        #send-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        #send-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #warning {
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 5px;
+            transition: var(--transition);
+        }
+
+        #toggle-mode {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        #toggle-mode:hover {
+            background: var(--primary-dark);
+        }
+
+        body.dark-mode #toggle-mode {
+            background: var(--secondary-color);
+        }
+
+        body.dark-mode #toggle-mode:hover {
+            background: #6a27c5;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-light);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            padding: 15px 0;
+            overflow-y: auto;
+        }
+
+        body.dark-mode .sidebar {
+            background: var(--bg-dark);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        body.sidebar-open .sidebar {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 0 15px 15px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+            position: fixed;
+            width: var(--sidebar-width);
+            background: inherit;
+            z-index: 1001;
+        }
+
+        body.dark-mode .sidebar-header {
+            border-bottom-color: #444;
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 10px;
+            margin-top: 60px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(58, 134, 255, 0.1);
+        }
+
+        body.dark-mode .sidebar-item:hover {
+            background: rgba(58, 134, 255, 0.2);
+        }
+
+        .sidebar-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        body.dark-mode .sidebar-toggle {
+            background: var(--secondary-color);
+        }
+
+        body.dark-mode .sidebar-toggle:hover {
+            background: #6a27c5;
+        }
+
+        body.sidebar-open .sidebar-toggle {
+            left: calc(var(--sidebar-width) - 10px);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background: var(--message-bot);
+            border-radius: var(--border-radius);
+            width: fit-content;
+            gap: 5px;
+        }
+
+        body.dark-mode .typing-indicator {
+            background: #2d2d2d;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #888;
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* Code blocks */
+        .message-content pre {
+            background: #2d2d2d;
+            color: #eee;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .message-content code {
+            font-family: 'Courier New', monospace;
+        }
+
+        .message-content p {
+            margin-bottom: 8px;
+        }
+
+        .message-content ul,
+        .message-content ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Copy buttons */
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .message-content:hover .copy-btn,
+        pre:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .copy-full-btn {
+            top: 5px;
+            right: 5px;
+            background: var(--primary-color);
+        }
+
+        .copy-code-btn {
+            top: 5px;
+            right: 5px;
+            background: #555;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            opacity: 0;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .notification.show {
+            opacity: 1;
+            bottom: 30px;
+        }
+
+        /* Voice button */
+        #voice-button {
+            padding: 0 15px;
+            font-size: 0.9rem;
+            border: none;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        #voice-button:hover {
+            background: #6a27c5;
+            transform: translateY(-1px);
+        }
+
+        #voice-button.listening {
+            background: var(--warning-color);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(217, 4, 41, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(217, 4, 41, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 4, 41, 0); }
+        }
+
+        /* Star button */
+        .star-btn {
+            background: none;
+            border: none;
+            color: var(--star-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-left: auto;
+            padding: 2px 5px;
+            transition: var(--transition);
+            opacity: 0.5;
+        }
+
+        .message:hover .star-btn {
+            opacity: 1;
+        }
+
+        .star-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .star-btn i.fas {
+            color: var(--star-color);
+        }
+
+        .message.starred {
+            position: relative;
+        }
+
+        .message.starred::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--star-color);
+            border-radius: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container, header {
+                max-width: 95%;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .logo {
+                width: 36px;
+                height: 36px;
+            }
+
+            #chatbox {
+                padding: 10px;
+                min-height: 55vh;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .message-content {
+                padding: 12px 14px;
+                font-size: 0.9rem;
+            }
+
+            .sidebar {
+                width: 220px;
+                left: -220px;
+            }
+
+            body.sidebar-open .container {
+                margin-left: 220px;
+            }
+
+            body.sidebar-open .sidebar-toggle {
+                left: 210px;
+            }
+
+            #input-form {
+                flex-wrap: wrap;
+            }
+
+            #voice-button, #send-button, #clear-button {
+                flex: 1;
+                min-width: 80px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+
+        /* Clear button */
+        #clear-button {
+            padding: 0 15px;
+            font-size: 0.9rem;
+            border: none;
+            background: var(--warning-color);
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        #clear-button:hover {
+            background: #b00020;
+            transform: translateY(-1px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+
+    <!-- Highlight.js pour coloration syntaxique -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+
+    <!-- Marked.js pour parser le Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="light-mode">
+<button class="sidebar-toggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h3 class="sidebar-title">
+            <i class="fas fa-cog"></i> Menu
+        </h3>
+    </div>
+    <div class="sidebar-menu">
+        <a href="#" class="sidebar-item" id="login-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Connexion</span>
+        </a>
+        <a href="#" class="sidebar-item" id="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+        </a>
+        <a href="#" class="sidebar-item" id="history-btn">
+            <i class="fas fa-history"></i>
+            <span>Historique</span>
+        </a>
+        <a href="#" class="sidebar-item" id="settings-btn">
+            <i class="fas fa-cog"></i>
+            <span>Paramètres</span>
+        </a>
+        <a href="#" class="sidebar-item" id="clear-chat-btn">
+            <i class="fas fa-trash-alt"></i>
+            <span>Effacer la conversation</span>
+        </a>
+    </div>
+</div>
+
+<header style="position: relative">
+    <h1>
+        <img src="image/logo2.png" alt="JBOT Logo" class="logo" />
+        JBOT
+    </h1>
+    <button id="toggle-mode">
+        <i class="fas fa-moon"></i> Mode sombre
+    </button>
+</header>
+
+<div class="container">
+    <div id="chatbox"></div>
+
+    <div id="input-area">
+        <form id="input-form">
+            <input type="text" id="message-input" placeholder="Pose ta question Java..." autocomplete="off" required />
+            <div class="button-group">
+                <button type="button" id="voice-button">
+                    <i class="fas fa-microphone"></i> Voix
+                </button>
+                <button type="submit" id="send-button">
+                    <i class="fas fa-paper-plane"></i> Envoyer
+                </button>
+                <button type="button" id="clear-button">
+                    <i class="fas fa-trash-alt"></i> Effacer
+                </button>
+            </div>
+        </form>
+        <p id="warning">
+            <i class="fas fa-exclamation-triangle"></i> N'oublie pas d'inclure le mot <strong>"java"</strong> dans ta question, sinon JBOT ne répondra pas !
+        </p>
+    </div>
+</div>
+
+<div class="notification" id="notification"></div>
+
+<script>
+    const chatbox = document.getElementById('chatbox');
+    const form = document.getElementById('input-form');
+    const input = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const warning = document.getElementById('warning');
+    const toggleBtn = document.getElementById('toggle-mode');
+    const body = document.body;
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const notification = document.getElementById('notification');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const clearChatBtn = document.getElementById('clear-chat-btn');
+    const clearButton = document.getElementById('clear-button');
+    const voiceButton = document.getElementById('voice-button');
+    const settingsBtn = document.getElementById('settings-btn');
+    const historyBtn = document.getElementById('history-btn');
+
+    // Gestion de la sidebar
+    sidebarToggle.addEventListener('click', () => {
+        body.classList.toggle('sidebar-open');
+    });
+
+    // Fonction pour afficher une notification
+    function showNotification(message, duration = 2000) {
+        notification.textContent = message;
+        notification.classList.add('show');
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, duration);
+    }
+
+    // Gestion de la connexion/déconnexion
+    let isLoggedIn = false;
+
+    loginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!isLoggedIn) {
+            isLoggedIn = true;
+            showNotification('Connexion réussie !');
+            loginBtn.innerHTML = '<i class="fas fa-user-check"></i><span>Connecté</span>';
+            logoutBtn.style.display = 'flex';
+        }
+    });
+
+    logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (isLoggedIn) {
+            isLoggedIn = false;
+            showNotification('Déconnexion réussie');
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>Connexion</span>';
+        }
+    });
+
+    // Ajouter un indicateur de saisie
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.classList.add('message', 'bot-message');
+        typingDiv.id = 'typing-indicator';
+
+        const typingContent = document.createElement('div');
+        typingContent.classList.add('typing-indicator');
+
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('typing-dot');
+            typingContent.appendChild(dot);
+        }
+
+        typingDiv.appendChild(typingContent);
+        chatbox.appendChild(typingDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    // Supprimer l'indicateur de saisie
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    function getCurrentTime() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function addMessage(text, isUser) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', isUser ? 'user-message' : 'bot-message');
+
+        const messageHeader = document.createElement('div');
+        messageHeader.classList.add('message-header');
+
+        const avatar = document.createElement('img');
+        avatar.classList.add('avatar', isUser ? 'user-avatar' : 'bot-avatar');
+        avatar.src = isUser ? 'image/9131529.png' : 'image/logo2.png';
+        avatar.alt = isUser ? 'Utilisateur' : 'JBOT';
+
+        const nameLabel = document.createElement('div');
+        nameLabel.classList.add('name-label');
+        nameLabel.textContent = isUser ? 'Vous' : 'JBOT';
+
+        const timeLabel = document.createElement('div');
+        timeLabel.classList.add('time-label');
+        timeLabel.textContent = getCurrentTime();
+
+        // Ajouter le bouton d'étoile pour marquer les réponses (uniquement pour le bot)
+        if (!isUser) {
+            const starBtn = document.createElement('button');
+            starBtn.classList.add('star-btn');
+            starBtn.innerHTML = '<i class="far fa-star"></i>';
+            starBtn.title = 'Marquer cette réponse';
+            starBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                starBtn.querySelector('i').classList.toggle('fas');
+                starBtn.querySelector('i').classList.toggle('far');
+                msgDiv.classList.toggle('starred');
+
+                if (starBtn.querySelector('i').classList.contains('fas')) {
+                    showNotification('Réponse marquée !');
+                }
+            });
+            messageHeader.appendChild(starBtn);
+        }
+
+        messageHeader.appendChild(avatar);
+        messageHeader.appendChild(nameLabel);
+        messageHeader.appendChild(timeLabel);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.classList.add('message-content');
+        contentDiv.innerHTML = isUser ? text : marked.parse(text);
+
+        // Ajouter le bouton de copie pour tout le message
+        const copyFullBtn = document.createElement('button');
+        copyFullBtn.classList.add('copy-btn', 'copy-full-btn');
+        copyFullBtn.innerHTML = '<i class="fas fa-copy"></i> Copier';
+        copyFullBtn.title = 'Copier tout le message';
+        contentDiv.appendChild(copyFullBtn);
+
+        // Ajouter des boutons de copie pour chaque bloc de code
+        const codeBlocks = contentDiv.querySelectorAll('pre');
+        codeBlocks.forEach((block) => {
+            const copyCodeBtn = document.createElement('button');
+            copyCodeBtn.classList.add('copy-btn', 'copy-code-btn');
+            copyCodeBtn.innerHTML = '<i class="fas fa-copy"></i> Code';
+            copyCodeBtn.title = 'Copier le code';
+            block.appendChild(copyCodeBtn);
+
+            copyCodeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const code = block.querySelector('code').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    showNotification('Code copié !');
+                });
+            });
+        });
+
+        copyFullBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let textToCopy = '';
+
+            if (isUser) {
+                textToCopy = text;
+            } else {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = contentDiv.innerHTML;
+                tempDiv.querySelectorAll('.copy-btn').forEach(btn => btn.remove());
+                textToCopy = tempDiv.textContent;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showNotification('Message copié !');
+            });
+        });
+
+        msgDiv.appendChild(messageHeader);
+        msgDiv.appendChild(contentDiv);
+
+        chatbox.appendChild(msgDiv);
+        setTimeout(() => hljs.highlightAll(), 0);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    // Fonction pour effacer la conversation
+    function clearConversation() {
+        // Stocker l'historique avant de vider
+        const messages = chatbox.querySelectorAll('.message');
+        const conversationHistory = Array.from(messages).map(msg => {
+            return {
+                isUser: msg.classList.contains('user-message'),
+                content: msg.querySelector('.message-content').innerHTML,
+                time: msg.querySelector('.time-label').textContent,
+                isStarred: msg.classList.contains('starred')
+            };
+        });
+
+        // Stocker dans localStorage avant de vider
+        localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+
+        // Vider la chatbox
+        chatbox.innerHTML = '';
+        showNotification('Conversation effacée');
+    }
+
+    // Fonction pour restaurer la conversation
+    function restoreConversation() {
+        const savedHistory = localStorage.getItem('conversationHistory');
+        if (savedHistory) {
+            const history = JSON.parse(savedHistory);
+            history.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.classList.add('message', msg.isUser ? 'user-message' : 'bot-message');
+                if (msg.isStarred) msgDiv.classList.add('starred');
+
+                const messageHeader = document.createElement('div');
+                messageHeader.classList.add('message-header');
+
+                const avatar = document.createElement('img');
+                avatar.classList.add('avatar', msg.isUser ? 'user-avatar' : 'bot-avatar');
+                avatar.src = msg.isUser ? 'image/9131529.png' : 'image/logo2.png';
+                avatar.alt = msg.isUser ? 'Utilisateur' : 'JBOT';
+
+                const nameLabel = document.createElement('div');
+                nameLabel.classList.add('name-label');
+                nameLabel.textContent = msg.isUser ? 'Vous' : 'JBOT';
+
+                const timeLabel = document.createElement('div');
+                timeLabel.classList.add('time-label');
+                timeLabel.textContent = msg.time;
+
+                // Ajouter le bouton d'étoile pour les messages marqués
+                if (!msg.isUser) {
+                    const starBtn = document.createElement('button');
+                    starBtn.classList.add('star-btn');
+                    starBtn.innerHTML = msg.isStarred ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+                    starBtn.title = 'Marquer cette réponse';
+                    starBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        starBtn.querySelector('i').classList.toggle('fas');
+                        starBtn.querySelector('i').classList.toggle('far');
+                        msgDiv.classList.toggle('starred');
+
+                        if (starBtn.querySelector('i').classList.contains('fas')) {
+                            showNotification('Réponse marquée !');
+                        }
+                    });
+                    messageHeader.appendChild(starBtn);
+                }
+
+                messageHeader.appendChild(avatar);
+                messageHeader.appendChild(nameLabel);
+                messageHeader.appendChild(timeLabel);
+
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('message-content');
+                contentDiv.innerHTML = msg.content;
+
+                msgDiv.appendChild(messageHeader);
+                msgDiv.appendChild(contentDiv);
+                chatbox.appendChild(msgDiv);
+            });
+
+            setTimeout(() => hljs.highlightAll(), 0);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+    }
+
+    // Gestion de la reconnaissance vocale
+    let recognition;
+    try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'fr-FR';
+
+        recognition.onstart = () => {
+            voiceButton.classList.add('listening');
+            showNotification('Écoute en cours...');
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            input.value = transcript;
+            voiceButton.classList.remove('listening');
+
+            // Vérifier si le texte contient "java"
+            if (!transcript.toLowerCase().includes('java')) {
+                warning.style.color = 'var(--warning-color)';
+                warning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> N\'oublie pas d\'inclure le mot <strong>"java"</strong> dans ta question, sinon JBOT ne répondra pas !';
+            } else {
+                warning.style.color = 'var(--success-color)';
+                warning.innerHTML = '<i class="fas fa-check-circle"></i> Mot clé "java" détecté, tu peux envoyer ta question !';
+            }
+        };
+
+        recognition.onerror = (event) => {
+            voiceButton.classList.remove('listening');
+            showNotification('Erreur de reconnaissance: ' + event.error);
+        };
+
+        recognition.onend = () => {
+            voiceButton.classList.remove('listening');
+        };
+
+        voiceButton.addEventListener('click', () => {
+            try {
+                if (voiceButton.classList.contains('listening')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            } catch (e) {
+                showNotification('La reconnaissance vocale n\'est pas supportée ou a échoué');
+                console.error('Speech recognition error:', e);
+            }
+        });
+    } catch (e) {
+        voiceButton.disabled = true;
+        voiceButton.title = 'Reconnaissance vocale non supportée par votre navigateur';
+        console.warn('Speech recognition not supported', e);
+    }
+
+    // Écouteurs d'événements pour les boutons
+    clearButton.addEventListener('click', clearConversation);
+    clearChatBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearConversation();
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const message = input.value.trim();
+        if (!message) return;
+
+        addMessage(message, true);
+        input.value = '';
+        sendButton.disabled = true;
+        showTypingIndicator();
+
+        try {
+            const response = await fetch('/api/chatbot/ask', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: message })
+            });
+
+            hideTypingIndicator();
+
+            if (!response.ok) {
+                addMessage("Désolé, une erreur s'est produite. Veuillez réessayer plus tard.", false);
+            } else {
+                const botReply = await response.text();
+                addMessage(botReply, false);
+            }
+        } catch (err) {
+            hideTypingIndicator();
+            addMessage("Erreur de connexion. Vérifiez votre réseau et réessayez.", false);
+        } finally {
+            sendButton.disabled = false;
+            input.focus();
+        }
+    });
+
+    input.addEventListener('input', () => {
+        if (!input.value.toLowerCase().includes('java')) {
+            warning.style.color = 'var(--warning-color)';
+            warning.innerHTML = '<i class="fas fa-exclamation-triangle"></i> N\'oublie pas d\'inclure le mot <strong>"java"</strong> dans ta question, sinon JBOT ne répondra pas !';
+        } else {
+            warning.style.color = 'var(--success-color)';
+            warning.innerHTML = '<i class="fas fa-check-circle"></i> Mot clé "java" détecté, tu peux envoyer ta question !';
+        }
+    });
+
+    // Gestion du mode sombre/clair
+    toggleBtn.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        body.classList.toggle('light-mode');
+
+        const isDark = body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+
+        if (isDark) {
+            toggleBtn.innerHTML = '<i class="fas fa-sun"></i> Mode clair';
+        } else {
+            toggleBtn.innerHTML = '<i class="fas fa-moon"></i> Mode sombre';
+        }
+    });
+
+    // Vérifier le mode au chargement
+    if (localStorage.getItem('darkMode') === 'true') {
+        body.classList.add('dark-mode');
+        body.classList.remove('light-mode');
+        toggleBtn.innerHTML = '<i class="fas fa-sun"></i> Mode clair';
+    }
+
+    // Restaurer la conversation au chargement
+    window.addEventListener('load', () => {
+        restoreConversation();
+    });
+
+    // Focus sur l'input au chargement
+    input.focus();
+
+    // Fermer la sidebar en cliquant à l'extérieur
+    document.addEventListener('click', (e) => {
+        if (body.classList.contains('sidebar-open') &&
+            !sidebar.contains(e.target) &&
+            !sidebarToggle.contains(e.target)) {
+            body.classList.remove('sidebar-open');
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+
+package com.example.demo.model;
+
+import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+public class ConversationHistory {
+    private final List<Message> messages = new ArrayList<>();
+
+    public void addUserMessage(String userMessage) {
+        messages.add(new Message("user", userMessage));
+    }
+
+    public void addBotMessage(String botMessage) {
+        messages.add(new Message("model", botMessage));
+    }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void clear() {
+        messages.clear();
+    }
+
+    public static class Message {
+        private final String role;
+        private final String text;
+
+        public Message(String role, String text) {
+            this.role = role;
+            this.text = text;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+
+    }
+}
